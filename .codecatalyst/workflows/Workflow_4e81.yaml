@@ -19,7 +19,6 @@ Actions:
         - WorkflowSource # This specifies that the action requires this Workflow as a source
     Compute:
       Type: EC2
-      Fleet: Linux.x86-64.Large
     # Defines the action's properties.
     Configuration:
       # Required; type: string; description: The Terraform operation mode, should one of test or plan or apply
@@ -28,5 +27,5 @@ Actions:
       AWSRegion: us-west-2
       StateBucket: wiz-je-test
       StateKey: wiz-je-test
-      WorkingDirectory: backend
+      WorkingDirectory: s3-backend
       StateTable: wiz-je-test
