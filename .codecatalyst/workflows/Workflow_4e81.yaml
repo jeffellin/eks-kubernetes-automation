@@ -12,6 +12,11 @@ Actions:
   TerraformCommunityEdition_96:
     # Identifies the action. Do not modify this value.
     Identifier: codecatalyst-labs/provision-with-terraform-community@v1.0.2
+    Environment:
+      Connections:
+        - Role: CodeCatalystWorkflowDevelopmentRole-dev-ellinj
+          Name: "958006911575"
+      Name: admin
     # Specifies the source and/or artifacts to pass to the action as input.
     Inputs:
       # Optional
