@@ -9,3 +9,16 @@ Triggers:
 
 # Required - Define action configurations.
 Actions:
+  HelloWorld:
+    Identifier: aws/build@v1
+    Inputs:
+      Sources:
+        - WorkflowSource  # Uses the source repository as input
+    Configuration:
+      Steps:
+        - Run: echo "Hello, World!"
+        - Run: echo "Welcome to Amazon CodeCatalyst!"
+        - Run: echo "Current date and time:"
+        - Run: date
+        - Run: echo "Listing current directory:"
+        - Run: ls -la
