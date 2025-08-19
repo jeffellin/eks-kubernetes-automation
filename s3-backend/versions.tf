@@ -3,7 +3,7 @@ terraform {
   
   backend "s3" {
     bucket         = "wiz-je-test"
-    key            = "s3-backend/terraform.tfstate"
+    key            = "wiz-je-test"
     region         = "us-west-2"
     dynamodb_table = "wiz-je-test"
     encrypt        = true
