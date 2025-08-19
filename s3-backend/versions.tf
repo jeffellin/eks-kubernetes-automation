@@ -1,6 +1,14 @@
 terraform {
   required_version = ">= 1.0"
   
+  backend "s3" {
+    bucket         = "wiz-je-test"
+    key            = "s3-backend/terraform.tfstate"
+    region         = "us-west-2"
+    dynamodb_table = "wiz-je-test"
+    encrypt        = true
+  }
+  
   required_providers {
     aws = {
       source  = "hashicorp/aws"
