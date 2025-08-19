@@ -13,6 +13,8 @@ resource "aws_eks_cluster" "wiz_cluster" {
 
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
+  # OIDC Identity provider configuration will be created separately
+
   encryption_config {
     provider {
       key_arn = aws_kms_key.wiz_eks_kms_key.arn

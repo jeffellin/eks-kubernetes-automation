@@ -104,3 +104,77 @@ output "bastion_ssh_command" {
   description = "SSH command to connect to bastion host"
   value       = "ssh -i wiz-bastion-key.pem ec2-user@${aws_instance.wiz_bastion.public_ip}"
 }
+
+# IRSA (IAM Roles for Service Accounts) outputs
+output "oidc_provider_arn" {
+  description = "ARN of the OIDC Identity Provider"
+  value       = aws_iam_openid_connect_provider.cluster.arn
+}
+
+output "oidc_issuer_url" {
+  description = "Issuer URL for the OpenID Connect identity provider"
+  value       = local.oidc_issuer_url
+}
+
+output "service_account_role_arn" {
+  description = "ARN of the IAM role for service account"
+  value       = aws_iam_role.service_account_role.arn
+}
+
+output "service_account_name" {
+  description = "Name of the Kubernetes service account"
+  value       = kubernetes_service_account.wiz_service_account.metadata[0].name
+}
+
+output "service_account_namespace" {
+  description = "Namespace of the Kubernetes service account"
+  value       = kubernetes_service_account.wiz_service_account.metadata[0].namespace
+}
+
+# PostgreSQL instance outputs
+output "postgres_instance_id" {
+  description = "ID of the PostgreSQL EC2 instance"
+  value       = aws_instance.wiz_postgres.id
+}
+
+output "postgres_private_ip" {
+  description = "Private IP address of the PostgreSQL instance"
+  value       = aws_instance.wiz_postgres.private_ip
+}
+
+output "postgres_security_group_id" {
+  description = "ID of the PostgreSQL security group"
+  value       = aws_security_group.wiz_postgres_sg.id
+}
+
+output "postgres_role_arn" {
+  description = "ARN of the PostgreSQL instance IAM role"
+  value       = aws_iam_role.wiz_postgres_role.arn
+}
+
+output "postgres_connection_string" {
+  description = "PostgreSQL connection details"
+  value       = "postgresql://postgres:WizPostgres123!@${aws_instance.wiz_postgres.private_ip}:5432/wizdb"
+  sensitive   = true
+}
+
+output "postgres_ssh_command" {
+  description = "SSH command to connect to PostgreSQL instance via bastion"
+  value       = "ssh -i wiz-postgres-key.pem -o ProxyCommand='ssh -i wiz-bastion-key.pem -W %h:%p ec2-user@${aws_instance.wiz_bastion.public_ip}' ec2-user@${aws_instance.wiz_postgres.private_ip}"
+}
+
+# S3 backup bucket outputs
+output "backup_bucket_name" {
+  description = "Name of the S3 backup bucket"
+  value       = aws_s3_bucket.wiz_postgres_backups.bucket
+}
+
+output "backup_bucket_arn" {
+  description = "ARN of the S3 backup bucket"
+  value       = aws_s3_bucket.wiz_postgres_backups.arn
+}
+
+output "backup_bucket_url" {
+  description = "Public URL of the S3 backup bucket"
+  value       = "https://${aws_s3_bucket.wiz_postgres_backups.bucket}.s3.amazonaws.com"
+}

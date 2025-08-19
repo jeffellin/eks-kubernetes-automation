@@ -85,3 +85,46 @@ resource "aws_security_group_rule" "wiz_cluster_ingress_node_https" {
   source_security_group_id = aws_security_group.wiz_eks_nodes_sg.id
   description              = "Allow nodes to communicate with cluster API"
 }
+
+resource "aws_security_group" "wiz_postgres_sg" {
+  name_prefix = "wiz-postgres-sg"
+  vpc_id      = aws_vpc.wiz_vpc.id
+  description = "Security group for PostgreSQL EC2 instance"
+
+  ingress {
+    description     = "PostgreSQL from EKS nodes"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.wiz_eks_nodes_sg.id]
+  }
+
+  ingress {
+    description     = "PostgreSQL from bastion"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.wiz_bastion_sg.id]
+  }
+
+  ingress {
+    description     = "SSH from bastion"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.wiz_bastion_sg.id]
+  }
+
+  egress {
+    description = "All outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name    = "wiz-postgres-sg"
+    purpose = "wiz"
+  }
+}

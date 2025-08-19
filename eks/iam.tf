@@ -81,3 +81,142 @@ resource "aws_iam_instance_profile" "wiz_eks_node_instance_profile" {
     purpose = "wiz"
   }
 }
+
+# Data source to get current AWS region
+data "aws_region" "current" {}
+
+# Data source to get EKS cluster OIDC issuer URL
+data "aws_eks_cluster" "cluster" {
+  name = aws_eks_cluster.wiz_cluster.name
+}
+
+# Data source for EKS cluster OIDC issuer URL
+locals {
+  oidc_issuer_url = data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer
+}
+
+# TLS certificate data for EKS OIDC root CA
+data "tls_certificate" "cluster" {
+  url = local.oidc_issuer_url
+}
+
+# OIDC Identity Provider
+resource "aws_iam_openid_connect_provider" "cluster" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.cluster.certificates[0].sha1_fingerprint]
+  url             = local.oidc_issuer_url
+
+  tags = {
+    Name    = "wiz-eks-oidc-provider"
+    purpose = "wiz"
+  }
+}
+
+# IAM Role for Service Account
+resource "aws_iam_role" "service_account_role" {
+  name = "wiz-eks-service-account-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.cluster.arn
+        }
+        Condition = {
+          StringEquals = {
+            "${replace(local.oidc_issuer_url, "https://", "")}:sub": "system:serviceaccount:default:wiz-service-account"
+            "${replace(local.oidc_issuer_url, "https://", "")}:aud": "sts.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name    = "wiz-eks-service-account-role"
+    purpose = "wiz"
+  }
+}
+
+# Example policy attachment for the service account role
+# Replace with appropriate policies for your use case
+resource "aws_iam_role_policy_attachment" "service_account_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+  role       = aws_iam_role.service_account_role.name
+}
+
+# IAM Role for PostgreSQL EC2 instance
+resource "aws_iam_role" "wiz_postgres_role" {
+  name = "wiz-postgres-ec2-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name    = "wiz-postgres-ec2-role"
+    purpose = "wiz"
+  }
+}
+
+# IAM policy attachments for PostgreSQL instance
+resource "aws_iam_role_policy_attachment" "wiz_postgres_ssm_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.wiz_postgres_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "wiz_postgres_cloudwatch_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+  role       = aws_iam_role.wiz_postgres_role.name
+}
+
+# Custom IAM policy for PostgreSQL instance with S3 and EC2 permissions
+resource "aws_iam_policy" "wiz_postgres_custom_policy" {
+  name        = "wiz-postgres-custom-policy"
+  description = "Custom policy for PostgreSQL instance with S3 and EC2 permissions"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["s3:*", "ec2:*"]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = {
+    Name    = "wiz-postgres-custom-policy"
+    purpose = "wiz"
+  }
+}
+
+# Attach custom policy to PostgreSQL role
+resource "aws_iam_role_policy_attachment" "wiz_postgres_custom_policy_attachment" {
+  policy_arn = aws_iam_policy.wiz_postgres_custom_policy.arn
+  role       = aws_iam_role.wiz_postgres_role.name
+}
+
+# IAM instance profile for PostgreSQL instance
+resource "aws_iam_instance_profile" "wiz_postgres_instance_profile" {
+  name = "wiz-postgres-instance-profile"
+  role = aws_iam_role.wiz_postgres_role.name
+
+  tags = {
+    Name    = "wiz-postgres-instance-profile"
+    purpose = "wiz"
+  }
+}
