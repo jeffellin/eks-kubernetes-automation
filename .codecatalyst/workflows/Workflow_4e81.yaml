@@ -26,8 +26,7 @@ Actions:
       Type: EC2
     # Defines the action's properties.
     Configuration:
-      # Required; type: string; description: The Terraform operation mode, should one of test or plan or apply
-      TerraformOperationMode: plan
+      TerraformOperationMode: apply
       TerraformVersion: 1.5.1
       AWSRegion: us-west-2
       StateBucket: wiz-je-test
