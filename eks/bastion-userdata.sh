@@ -6,7 +6,7 @@ yum update -y
 # Install necessary tools
 yum install -y git curl wget unzip
 
-# Install AWS CLI v2
+# Install AWS CLI v2 -
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
