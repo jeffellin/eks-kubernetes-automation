@@ -2,10 +2,7 @@ Name: Maven-Security-Scan
 SchemaVersion: "1.0"
 
 Triggers:
-  - Type: Push
-    Branches:
-      - main
-  - Type: PullRequest
+  - Type: PUSH
     Branches:
       - main
 
@@ -13,7 +10,7 @@ Actions:
   MavenBuildAndSecurityScan:
     Identifier: aws/build@v1
     Environment:
-      Name: default
+      Name: admin
     Inputs:
       Sources:
         - WorkflowSource
@@ -86,8 +83,13 @@ Actions:
     
     # Upload SARIF files as artifacts for further analysis
     Outputs:
-      Artifacts:
-        - Name: security-reports
-          Files:
+      Reports:
+        SCA:
+          Format: SARIFSCA
+          IncludePaths:
             - "demo/trivy-jar-report.sarif"
             - "demo/trivy-source-report.sarif"
+          SuccessCriteria:
+            Vulnerabilities:
+              Severity: HIGH
+              Number: 0
