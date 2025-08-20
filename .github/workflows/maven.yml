@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  security-events: write
+  contents: read
+
 jobs:
   package:
     runs-on: self-hosted
@@ -53,6 +57,9 @@ jobs:
     runs-on: self-hosted
     needs: package
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
