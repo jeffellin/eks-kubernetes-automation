@@ -49,17 +49,14 @@ jobs:
           --env BP_JVM_VERSION=17 \
           --publish
   trivy:
-    name: Build
+    name: Security Scan
     runs-on: self-hosted
+    needs: package
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Build an image from Dockerfile
-        run: docker build -t docker.io/ellinj/demo-sec-app:${{ github.sha }} .
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: 'docker.io/ellinj/demo-sec-app:${{ github.sha }}'
+          image-ref: 'docker.io/ellinj/demo-sec-app:latest'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
