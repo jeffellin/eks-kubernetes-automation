@@ -67,6 +67,23 @@ Actions:
               echo "✅ No HIGH or CRITICAL vulnerabilities found"
             fi
         
+        # Install and use pack CLI to build Docker image
+        - Run: |
+            cd demo
+            # Install pack CLI
+            curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.32.1/pack-v0.32.1-linux.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack
+            pack --version
+            
+            # Build Docker image using pack CLI with the JAR artifact from target directory
+            echo "🐳 Building Docker image with pack CLI..."
+            pack build demo-app:latest \
+              --path target/ \
+              --builder paketobuildpacks/builder-jammy-base \
+              --env BP_JVM_VERSION=17
+            
+            echo "✅ Docker image built successfully!"
+            docker images demo-app:latest
+        
         # Upload SARIF reports as artifacts
         - Run: |
             cd demo

@@ -68,3 +68,9 @@ terraform.rc
 
 # Note: .terraform.lock.hcl should typically be committed to ensure
 # consistent dependency versions across environments
+
+# Maven build artifacts
+demo/target/
+
+# Security scan reports
+*.sarif
