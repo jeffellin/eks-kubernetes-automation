@@ -27,4 +27,4 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
     
     - name: Run Maven package
-      run: mvn package
+      run: cd demo && mvn package

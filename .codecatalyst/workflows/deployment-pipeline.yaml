@@ -14,6 +14,8 @@ Actions:
             - WorkflowSource
         Configuration:
           Steps:
+            - name: Change to demo directory and run Trivy Vulnerability Scanner
+              run: cd demo
             - name: Trivy Vulnerability Scanner
               uses: aquasecurity/trivy-action@0.24.0
               with:
@@ -23,6 +25,7 @@ Actions:
                 output: report.sarif
                 security-checks: vuln,config,secret
                 severity: CRITICAL,HIGH
+                scan-ref: './demo'
               env:
                 TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
         Outputs:
@@ -52,7 +55,7 @@ Actions:
                 - "**/*"
         Configuration:
           Steps:
-            - Run: mvn verify --batch-mode --no-transfer-progress
+            - Run: cd demo && mvn verify --batch-mode --no-transfer-progress
       Synth:
         Identifier: aws/build@v1
         Inputs:
@@ -72,10 +75,10 @@ Actions:
                 - cdk.out/**/*
         Configuration:
           Steps:
-            - Run: npm ci
-            - Run: npm test
-            - Run: npm run lint
-            - Run: npm run build
+            - Run: cd demo && npm ci
+            - Run: cd demo && npm test
+            - Run: cd demo && npm run lint
+            - Run: cd demo && npm run build
           Container:
             Registry: CODECATALYST
             Image: CodeCatalystLinux_x86_64:2024_03
