@@ -53,23 +53,28 @@ jobs:
 
     - name: Terraform Plan
       id: plan
-      run: terraform plan -no-color -out=tfplan
+      run: |
+        terraform plan -no-color -out=tfplan 2>&1 | tee plan.txt
+        echo "exitcode=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
       continue-on-error: true
 
     - name: Comment PR with Plan
       uses: actions/github-script@v6
       if: github.event_name == 'pull_request'
-      env:
-        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
+          const fs = require('fs');
+          const plan = fs.readFileSync('plan.txt', 'utf8');
+          const maxLength = 65000; // GitHub comment limit
+          const truncatedPlan = plan.length > maxLength ? plan.substring(0, maxLength) + '\n...\n[Output truncated]' : plan;
+          
           const output = `#### Terraform Plan 📖 \`${{ steps.plan.outcome }}\`
 
           <details><summary>Show Plan</summary>
 
-          \`\`\`\n
-          ${process.env.PLAN}
+          \`\`\`terraform
+          ${truncatedPlan}
           \`\`\`
 
           </details>
