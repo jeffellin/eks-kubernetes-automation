@@ -4,7 +4,7 @@ resource "kubernetes_namespace" "argocd" {
     name = "argocd"
   }
 
-  depends_on = [aws_eks_cluster.wiz_cluster, aws_eks_node_group.wiz_nodes]
+  depends_on = [aws_eks_cluster.wiz_cluster, aws_eks_node_group.wiz_node_group]
 }
 
 # ArgoCD Helm Release
@@ -61,6 +61,6 @@ resource "helm_release" "argocd" {
 
   depends_on = [
     kubernetes_namespace.argocd,
-    aws_eks_node_group.wiz_nodes
+    aws_eks_node_group.wiz_node_group
   ]
 }
