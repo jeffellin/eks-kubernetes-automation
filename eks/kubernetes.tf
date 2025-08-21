@@ -1,5 +1,7 @@
 # AWS Auth ConfigMap for EKS cluster access
 resource "kubernetes_config_map_v1_data" "aws_auth" {
+  force = true
+  
   metadata {
     name      = "aws-auth"
     namespace = "kube-system"
@@ -18,6 +20,7 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
         groups   = ["system:masters"]
       }
     ])
+    
   }
 
   depends_on = [aws_eks_cluster.wiz_cluster]

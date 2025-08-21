@@ -1,0 +1,4 @@
+#export AWS_SECRET_ACCESS_KEY=$(op read "op://Private/jeff-AWS Access Key/secret access key")
+#export AWS_ACCESS_KEY_ID=$(op read "op://Private/jeff-AWS Access Key/access key id")
+export AWS_SECRET_ACCESS_KEY=$(op read "op://Private/AWS Access Key - wiz/access key id")
+export AWS_ACCESS_KEY_ID=$(op read "op://Private/jeff-AWS Access Key/access key id")
