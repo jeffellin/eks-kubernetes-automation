@@ -33,7 +33,7 @@ data "aws_ami" "amazon_linux" {
 # PostgreSQL EC2 instance
 resource "aws_instance" "wiz_postgres" {
   ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t3.medium"
+  instance_type          = "t3.small"
   key_name               = aws_key_pair.wiz_postgres_key.key_name
   vpc_security_group_ids = [aws_security_group.wiz_postgres_sg.id]
   subnet_id              = aws_subnet.wiz_private_subnets[0].id
