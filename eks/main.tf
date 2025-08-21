@@ -16,10 +16,10 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "wiz-je-test"
-    key            = "wiz-je-test"
+    bucket         = "terafform-tf-state-821"
+    key            = "terafform-tf-state-821"
     region         = "us-west-2"
-    dynamodb_table = "wiz-je-test"
+    dynamodb_table = "terafform-tf-state-821"
     encrypt        = true
   }
 }
