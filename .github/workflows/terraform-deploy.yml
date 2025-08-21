@@ -65,7 +65,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const fs = require('fs');
-          const plan = fs.readFileSync('plan.txt', 'utf8');
+          const plan = fs.readFileSync('${{ env.WORKING_DIRECTORY }}/plan.txt', 'utf8');
           const maxLength = 65000; // GitHub comment limit
           const truncatedPlan = plan.length > maxLength ? plan.substring(0, maxLength) + '\n...\n[Output truncated]' : plan;
           
