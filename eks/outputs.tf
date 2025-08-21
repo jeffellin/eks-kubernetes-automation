@@ -178,3 +178,14 @@ output "backup_bucket_url" {
   description = "Public URL of the S3 backup bucket"
   value       = "https://${aws_s3_bucket.wiz_postgres_backups.bucket}.s3.amazonaws.com"
 }
+
+# ArgoCD outputs
+output "argocd_server_url" {
+  description = "ArgoCD server URL"
+  value       = "Access ArgoCD at the Load Balancer endpoint once deployed"
+}
+
+output "argocd_admin_password_command" {
+  description = "Command to retrieve ArgoCD admin password"
+  value       = "kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d"
+}
