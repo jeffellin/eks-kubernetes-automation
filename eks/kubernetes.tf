@@ -10,3 +10,12 @@ resource "kubernetes_service_account" "wiz_service_account" {
 
   depends_on = [aws_eks_cluster.wiz_cluster]
 }
+
+# ArgoCD Application for web-eks-kubernetes-automation
+resource "kubernetes_manifest" "argo_application" {
+  manifest = yamldecode(file("${path.module}/../k8s/argo-application.yaml"))
+  
+  depends_on = [
+    helm_release.argocd
+  ]
+}
