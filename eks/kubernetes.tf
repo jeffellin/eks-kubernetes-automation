@@ -26,6 +26,39 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
   depends_on = [aws_eks_cluster.wiz_cluster]
 }
 
+# Secrets namespace
+resource "kubernetes_namespace" "secrets" {
+  metadata {
+    name = "secrets"
+  }
+
+  depends_on = [aws_eks_cluster.wiz_cluster, aws_eks_node_group.wiz_node_group]
+}
+
+# PostgreSQL Secret in secrets namespace
+resource "kubernetes_secret" "postgres_secret" {
+  metadata {
+    name      = "postgres-secret"
+    namespace = kubernetes_namespace.secrets.metadata[0].name
+  }
+
+  type = "Opaque"
+
+  data = {
+    host     = base64encode(aws_instance.wiz_postgres.private_ip)
+    user     = base64encode("postgres")
+    password = base64encode(random_password.postgres_password.result)
+    database = base64encode("postgres")
+    port     = base64encode("5432")
+  }
+
+  depends_on = [
+    kubernetes_namespace.secrets,
+    aws_instance.wiz_postgres,
+    random_password.postgres_password
+  ]
+}
+
 # Kubernetes Service Account with IRSA
 resource "kubernetes_service_account" "wiz_service_account" {
   metadata {
@@ -45,7 +78,7 @@ resource "null_resource" "argo_application" {
   provisioner "local-exec" {
     command = <<-EOT
       aws eks update-kubeconfig --region ${var.region} --name ${aws_eks_cluster.wiz_cluster.name}
-      kubectl apply -f ${path.module}/../k8s/argo-application.yaml
+      kubectl apply -f ${path.module}/../bootstrap/argo-application.yaml
     EOT
   }
   

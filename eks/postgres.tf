@@ -1,3 +1,17 @@
+# Generate secure random password for PostgreSQL
+resource "random_password" "postgres_password" {
+  length  = 16
+  special = true
+  upper   = true
+  lower   = true
+  numeric = true
+  override_special = "@#"
+  min_special = 2
+  min_upper   = 2
+  min_lower   = 2
+  min_numeric = 2
+}
+
 # Key pair for PostgreSQL instance
 resource "tls_private_key" "wiz_postgres_key" {
   algorithm = "RSA"
@@ -40,7 +54,7 @@ resource "aws_instance" "wiz_postgres" {
   iam_instance_profile   = aws_iam_instance_profile.wiz_postgres_instance_profile.name
 
   user_data = base64encode(templatefile("${path.module}/user_data/postgres_setup.sh", {
-    postgres_password = "WizPostgres123!"
+    postgres_password = random_password.postgres_password.result
     bucket_name       = aws_s3_bucket.wiz_postgres_backups.bucket
   }))
 

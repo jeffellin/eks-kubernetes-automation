@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/jeffellin/web-eks-kubernetes-automation
-    targetRevision: prod
+    targetRevision: main
     path: k8s
   destination:
     server: https://kubernetes.default.svc
