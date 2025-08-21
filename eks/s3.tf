@@ -7,7 +7,7 @@ resource "aws_s3_bucket" "wiz_postgres_backups" {
     purpose = "wiz"
   }
 }
-
+ 
 # Random string for unique bucket naming
 resource "random_string" "bucket_suffix" {
   length  = 8
