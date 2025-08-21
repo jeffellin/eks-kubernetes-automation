@@ -78,6 +78,7 @@ resource "aws_instance" "wiz_bastion" {
   vpc_security_group_ids      = [aws_security_group.wiz_bastion_sg.id]
   subnet_id                   = aws_subnet.wiz_public_subnets[0].id
   associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.wiz_bastion_instance_profile.name
 
   user_data = base64encode(templatefile("${path.module}/bastion-userdata.sh", {
     region       = var.region

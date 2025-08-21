@@ -220,3 +220,84 @@ resource "aws_iam_instance_profile" "wiz_postgres_instance_profile" {
     purpose = "wiz"
   }
 }
+
+# IAM Role for Bastion Host with EKS full access
+resource "aws_iam_role" "wiz_bastion_role" {
+  name = "wiz-bastion-eks-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name    = "wiz-bastion-eks-role"
+    purpose = "wiz"
+  }
+}
+
+# Custom IAM policy for bastion with full EKS cluster access
+resource "aws_iam_policy" "wiz_bastion_eks_policy" {
+  name        = "wiz-bastion-eks-full-access"
+  description = "Full EKS cluster access policy for bastion host"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "eks:*",
+          "iam:PassRole",
+          "iam:ListRoles",
+          "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies",
+          "iam:GetRole",
+          "iam:GetRolePolicy",
+          "ec2:DescribeInstances",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeVpcs",
+          "sts:GetCallerIdentity"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = {
+    Name    = "wiz-bastion-eks-full-access"
+    purpose = "wiz"
+  }
+}
+
+# Attach EKS policy to bastion role
+resource "aws_iam_role_policy_attachment" "wiz_bastion_eks_policy_attachment" {
+  policy_arn = aws_iam_policy.wiz_bastion_eks_policy.arn
+  role       = aws_iam_role.wiz_bastion_role.name
+}
+
+# Attach SSM policy for bastion management
+resource "aws_iam_role_policy_attachment" "wiz_bastion_ssm_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.wiz_bastion_role.name
+}
+
+# IAM instance profile for bastion
+resource "aws_iam_instance_profile" "wiz_bastion_instance_profile" {
+  name = "wiz-bastion-instance-profile"
+  role = aws_iam_role.wiz_bastion_role.name
+
+  tags = {
+    Name    = "wiz-bastion-instance-profile"
+    purpose = "wiz"
+  }
+}
