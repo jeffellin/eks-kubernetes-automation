@@ -1,5 +1,7 @@
 # AWS Auth ConfigMap for EKS cluster access
-resource "kubernetes_config_map_v1" "aws_auth" {
+resource "kubernetes_config_map_v1_data" "aws_auth" {
+  force = true
+  
   metadata {
     name      = "aws-auth"
     namespace = "kube-system"
