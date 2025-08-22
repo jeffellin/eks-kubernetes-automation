@@ -52,7 +52,7 @@ resource "aws_kms_alias" "wiz_eks_kms_alias" {
 
 resource "aws_cloudwatch_log_group" "wiz_eks_log_group" {
   name              = "/aws/eks/${var.cluster_name}/cluster"
-  retention_in_days = 30
+  retention_in_days = 7
 
   tags = {
     Name    = "wiz-eks-log-group"

@@ -1,16 +1,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: web-eks-kubernetes-automation
+  name: web-bootstrap-automation
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: https://github.com/jeffellin/web-eks-kubernetes-automation
-    targetRevision: prod
-    path: k8s
+    repoURL: https://github.com/jeffellin/eks-kubernetes-gitops
+    targetRevision: main
+    path: infra
   destination:
     server: https://kubernetes.default.svc
     namespace: default

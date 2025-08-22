@@ -21,6 +21,10 @@ jobs:
   terraform:
     name: 'Terraform Deploy'
     runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     
     defaults:
       run:
@@ -48,7 +52,41 @@ jobs:
       run: terraform validate
 
     - name: Terraform Plan
-      run: terraform plan -out=tfplan
+      id: plan
+      run: |
+        terraform plan -no-color -out=tfplan 2>&1 | tee plan.txt
+        echo "exitcode=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+      continue-on-error: true
+
+    - name: Comment PR with Plan
+      uses: actions/github-script@v6
+      if: github.event_name == 'pull_request'
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const plan = fs.readFileSync('${{ env.WORKING_DIRECTORY }}/plan.txt', 'utf8');
+          const maxLength = 65000; // GitHub comment limit
+          const truncatedPlan = plan.length > maxLength ? plan.substring(0, maxLength) + '\n...\n[Output truncated]' : plan;
+          
+          const output = `#### Terraform Plan 📖 \`${{ steps.plan.outcome }}\`
+
+          <details><summary>Show Plan</summary>
+
+          \`\`\`terraform
+          ${truncatedPlan}
+          \`\`\`
+
+          </details>
+
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'

@@ -152,9 +152,15 @@ output "postgres_role_arn" {
   value       = aws_iam_role.wiz_postgres_role.arn
 }
 
+output "postgres_password" {
+  description = "Generated PostgreSQL password"
+  value       = random_password.postgres_password.result
+  sensitive   = true
+}
+
 output "postgres_connection_string" {
   description = "PostgreSQL connection details"
-  value       = "postgresql://postgres:WizPostgres123!@${aws_instance.wiz_postgres.private_ip}:5432/wizdb"
+  value       = "postgresql://postgres:${random_password.postgres_password.result}@${aws_instance.wiz_postgres.private_ip}:5432/wizdb"
   sensitive   = true
 }
 
