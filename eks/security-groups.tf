@@ -108,6 +108,14 @@ resource "aws_security_group" "wiz_postgres_sg" {
   }
 
   ingress {
+    description = "PostgreSQL from EKS pod subnets"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = var.private_subnets
+  }
+
+  ingress {
     description     = "SSH from bastion"
     from_port       = 22
     to_port         = 22
