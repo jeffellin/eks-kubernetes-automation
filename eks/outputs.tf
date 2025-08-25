@@ -201,3 +201,20 @@ output "argocd_admin_password_command" {
   value       = "kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d"
 }
 
+# Demo-app IRSA outputs
+output "demo_app_role_arn" {
+  description = "ARN of the IAM role for demo-app service account"
+  value       = aws_iam_role.wiz_demo_app_role.arn
+}
+
+# ECR outputs
+output "ecr_repository_url" {
+  description = "URL of the ECR repository for demo-app"
+  value       = aws_ecr_repository.demo_app.repository_url
+}
+
+output "ecr_repository_name" {
+  description = "Name of the ECR repository for demo-app"
+  value       = aws_ecr_repository.demo_app.name
+}
+

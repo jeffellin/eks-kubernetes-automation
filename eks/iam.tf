@@ -336,3 +336,82 @@ resource "aws_iam_role_policy_attachment" "wiz_ebs_csi_driver_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
   role       = aws_iam_role.wiz_ebs_csi_driver_role.name
 }
+
+# IAM Role for demo-app service account (IRSA)
+resource "aws_iam_role" "wiz_demo_app_role" {
+  name = "wiz-demo-app-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.cluster.arn
+        }
+        Condition = {
+          StringEquals = {
+            "${replace(local.oidc_issuer_url, "https://", "")}:sub": "system:serviceaccount:demo-app:demo-app-service-account"
+            "${replace(local.oidc_issuer_url, "https://", "")}:aud": "sts.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name    = "wiz-demo-app-role"
+    purpose = "wiz"
+  }
+}
+
+# IAM policy for demo-app with AWS services access
+resource "aws_iam_policy" "wiz_demo_app_policy" {
+  name        = "wiz-demo-app-policy"
+  description = "IAM policy for demo-app with AWS services access"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket",
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret",
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:GetParametersByPath",
+          "cloudwatch:PutMetricData",
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:PutImage",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = {
+    Name    = "wiz-demo-app-policy"
+    purpose = "wiz"
+  }
+}
+
+# Attach policy to demo-app role
+resource "aws_iam_role_policy_attachment" "wiz_demo_app_policy_attachment" {
+  policy_arn = aws_iam_policy.wiz_demo_app_policy.arn
+  role       = aws_iam_role.wiz_demo_app_role.name
+}
