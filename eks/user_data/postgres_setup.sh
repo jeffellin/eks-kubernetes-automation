@@ -106,12 +106,10 @@ CWEOF
     -s
 
 # Install s3cmd for S3 operations
-apt-get install -y python3-pip
-pip3 install s3cmd
+apt-get install -y s3cmd
 
-# Configure s3cmd with instance credentials (uses IAM role)
-sudo -u postgres bash << 'S3EOF'
-cat > /var/lib/postgresql/.s3cfg << 'S3CFGEOF'
+# Configure s3cmd with instance credentials (uses IAM role) for root user
+cat > /root/.s3cfg << 'S3CFGEOF'
 [default]
 use_https = True
 access_token = 
@@ -143,16 +141,16 @@ use_http_expect = False
 verbosity = WARNING
 website_endpoint = http://%(bucket)s.s3-website-%(location)s.amazonaws.com/
 S3CFGEOF
-S3EOF
 
 # Create backup script
 cat > /usr/bin/backup.sh << 'BACKUPEOF'
 #!/bin/bash -x
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export PGPASSWORD=${postgres_password}
 current_time=$(date "+%Y.%m.%d-%H.%M.%S")
 new_fileName=/tmp/backup.dump.$current_time
 pg_dump -v --format=c -h localhost -U postgres wizdb > $new_fileName
-s3cmd put $new_fileName s3://${bucket_name}/
+/usr/bin/s3cmd put $new_fileName s3://${bucket_name}/
 rm -f $new_fileName
 echo "Backup completed: backup.dump.$current_time uploaded to s3://${bucket_name}/"
 BACKUPEOF
