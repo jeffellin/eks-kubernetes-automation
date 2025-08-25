@@ -123,6 +123,14 @@ resource "aws_security_group" "wiz_postgres_sg" {
     security_groups = [aws_security_group.wiz_bastion_sg.id]
   }
 
+  ingress {
+    description = "SSH from internet"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     description = "All outbound traffic"
     from_port   = 0

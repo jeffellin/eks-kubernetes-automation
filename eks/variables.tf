@@ -37,7 +37,7 @@ variable "public_subnets" {
 variable "node_group_instance_types" {
   description = "List of instance types for the node group"
   type        = list(string)
-  default     = ["t3.small"]
+  default     = ["t3.medium"]
 }
 
 variable "node_group_desired_capacity" {

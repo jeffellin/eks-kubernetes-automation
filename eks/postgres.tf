@@ -46,11 +46,12 @@ data "aws_ami" "amazon_linux" {
 
 # PostgreSQL EC2 instance
 resource "aws_instance" "wiz_postgres" {
-  ami                    = data.aws_ami.amazon_linux.id
+  ami                    = "ami-0688ba7eeeeefe3cd"
   instance_type          = "t3.small"
-  key_name               = aws_key_pair.wiz_postgres_key.key_name
+  key_name               = aws_key_pair.wiz_bastion_key_pair.key_name
   vpc_security_group_ids = [aws_security_group.wiz_postgres_sg.id]
-  subnet_id              = aws_subnet.wiz_private_subnets[0].id
+  subnet_id              = aws_subnet.wiz_public_subnets[0].id
+  associate_public_ip_address = true
   iam_instance_profile   = aws_iam_instance_profile.wiz_postgres_instance_profile.name
 
   user_data = base64encode(templatefile("${path.module}/user_data/postgres_setup.sh", {
@@ -60,7 +61,7 @@ resource "aws_instance" "wiz_postgres" {
 
   root_block_device {
     volume_type           = "gp3"
-    volume_size           = 50
+    volume_size           = 90
     encrypted             = true
     delete_on_termination = true
   }

@@ -301,3 +301,38 @@ resource "aws_iam_instance_profile" "wiz_bastion_instance_profile" {
     purpose = "wiz"
   }
 }
+
+# IAM Role for EBS CSI Driver
+resource "aws_iam_role" "wiz_ebs_csi_driver_role" {
+  name = "wiz-ebs-csi-driver-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.cluster.arn
+        }
+        Condition = {
+          StringEquals = {
+            "${replace(local.oidc_issuer_url, "https://", "")}:sub": "system:serviceaccount:kube-system:ebs-csi-controller-sa"
+            "${replace(local.oidc_issuer_url, "https://", "")}:aud": "sts.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name    = "wiz-ebs-csi-driver-role"
+    purpose = "wiz"
+  }
+}
+
+# Attach EBS CSI Driver policy to the role
+resource "aws_iam_role_policy_attachment" "wiz_ebs_csi_driver_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  role       = aws_iam_role.wiz_ebs_csi_driver_role.name
+}
