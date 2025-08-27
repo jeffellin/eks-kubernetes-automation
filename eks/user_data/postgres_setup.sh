@@ -1,18 +1,12 @@
 #!/bin/bash
 
 # Update system
-yum update -y
+apt-get update -y
 
-# Install PostgreSQL 13
-amazon-linux-extras install postgresql13 -y
+# Install PostgreSQL (default version for Ubuntu 16.04 - 9.5)
+apt-get install -y postgresql postgresql-client postgresql-contrib
 
-# Install PostgreSQL server
-yum install -y postgresql-server postgresql-contrib
-
-# Initialize PostgreSQL database
-postgresql-setup initdb
-
-# Enable and start PostgreSQL service
+# Start and enable PostgreSQL service
 systemctl enable postgresql
 systemctl start postgresql
 
@@ -26,11 +20,11 @@ EOF
 # Configure PostgreSQL for remote connections
 sudo -u postgres bash << 'EOF'
 # Update postgresql.conf
-echo "listen_addresses = '*'" >> /var/lib/pgsql/data/postgresql.conf
-echo "port = 5432" >> /var/lib/pgsql/data/postgresql.conf
+echo "listen_addresses = '*'" >> /etc/postgresql/9.5/main/postgresql.conf
+echo "port = 5432" >> /etc/postgresql/9.5/main/postgresql.conf
 
 # Update pg_hba.conf for authentication
-cat >> /var/lib/pgsql/data/pg_hba.conf << 'PGEOF'
+cat >> /etc/postgresql/9.5/main/pg_hba.conf << 'PGEOF'
 # Allow connections from VPC CIDR
 host    all             all             10.0.0.0/16            md5
 PGEOF
@@ -40,8 +34,8 @@ EOF
 systemctl restart postgresql
 
 # Install CloudWatch agent
-wget https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
-rpm -U ./amazon-cloudwatch-agent.rpm
+wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+dpkg -i amazon-cloudwatch-agent.deb
 
 # Create CloudWatch agent configuration
 cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'CWEOF'
@@ -55,7 +49,7 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'CWEO
             "files": {
                 "collect_list": [
                     {
-                        "file_path": "/var/lib/pgsql/data/log/postgresql*.log",
+                        "file_path": "/var/log/postgresql/postgresql-9.5-main.log",
                         "log_group_name": "/aws/ec2/postgres",
                         "log_stream_name": "{instance_id}/postgresql.log"
                     }
@@ -112,12 +106,10 @@ CWEOF
     -s
 
 # Install s3cmd for S3 operations
-yum install -y python3-pip
-pip3 install s3cmd
+apt-get install -y s3cmd
 
-# Configure s3cmd with instance credentials (uses IAM role)
-sudo -u postgres bash << 'S3EOF'
-cat > /var/lib/pgsql/.s3cfg << 'S3CFGEOF'
+# Configure s3cmd with instance credentials (uses IAM role) for root user
+cat > /root/.s3cfg << 'S3CFGEOF'
 [default]
 use_https = True
 access_token = 
@@ -149,16 +141,16 @@ use_http_expect = False
 verbosity = WARNING
 website_endpoint = http://%(bucket)s.s3-website-%(location)s.amazonaws.com/
 S3CFGEOF
-S3EOF
 
 # Create backup script
 cat > /usr/bin/backup.sh << 'BACKUPEOF'
 #!/bin/bash -x
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export PGPASSWORD=${postgres_password}
 current_time=$(date "+%Y.%m.%d-%H.%M.%S")
 new_fileName=/tmp/backup.dump.$current_time
 pg_dump -v --format=c -h localhost -U postgres wizdb > $new_fileName
-s3cmd put $new_fileName s3://${bucket_name}/
+/usr/bin/s3cmd put $new_fileName s3://${bucket_name}/
 rm -f $new_fileName
 echo "Backup completed: backup.dump.$current_time uploaded to s3://${bucket_name}/"
 BACKUPEOF

@@ -44,12 +44,12 @@ resource "kubernetes_secret" "postgres_secret" {
   type = "Opaque"
 
   data = {
-    host     = base64encode(aws_instance.wiz_postgres.private_ip)
-    user     = base64encode("postgres")
-    password = base64encode(random_password.postgres_password.result)
-    database = base64encode("wizdb")
-    port     = base64encode("5432")
-    jdbc_url = base64encode("jdbc:postgresql://postgres-service:5432/wizdb")
+    host     = aws_instance.wiz_postgres.private_ip
+    user     = "postgres"
+    password = random_password.postgres_password.result
+    database = "wizdb"
+    port     = "5432"
+    jdbc_url = "jdbc:postgresql://${aws_instance.wiz_postgres.private_ip}:5432/wizdb"
   }
 
   depends_on = [

@@ -142,6 +142,11 @@ output "postgres_private_ip" {
   value       = aws_instance.wiz_postgres.private_ip
 }
 
+output "postgres_public_ip" {
+  description = "Public IP address of the PostgreSQL instance"
+  value       = aws_instance.wiz_postgres.public_ip
+}
+
 output "postgres_security_group_id" {
   description = "ID of the PostgreSQL security group"
   value       = aws_security_group.wiz_postgres_sg.id
@@ -165,8 +170,8 @@ output "postgres_connection_string" {
 }
 
 output "postgres_ssh_command" {
-  description = "SSH command to connect to PostgreSQL instance via bastion"
-  value       = "ssh -i wiz-postgres-key.pem -o ProxyCommand='ssh -i wiz-bastion-key.pem -W %h:%p ec2-user@${aws_instance.wiz_bastion.public_ip}' ec2-user@${aws_instance.wiz_postgres.private_ip}"
+  description = "SSH command to connect to PostgreSQL instance directly"
+  value       = "ssh -i wiz-bastion-key.pem ubuntu@${aws_instance.wiz_postgres.public_ip}"
 }
 
 # S3 backup bucket outputs
@@ -195,3 +200,21 @@ output "argocd_admin_password_command" {
   description = "Command to retrieve ArgoCD admin password"
   value       = "kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d"
 }
+
+# Demo-app IRSA outputs
+output "demo_app_role_arn" {
+  description = "ARN of the IAM role for demo-app service account"
+  value       = aws_iam_role.wiz_demo_app_role.arn
+}
+
+# ECR outputs
+output "ecr_repository_url" {
+  description = "URL of the ECR repository for demo-app"
+  value       = aws_ecr_repository.demo_app.repository_url
+}
+
+output "ecr_repository_name" {
+  description = "Name of the ECR repository for demo-app"
+  value       = aws_ecr_repository.demo_app.name
+}
+
