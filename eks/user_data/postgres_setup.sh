@@ -27,6 +27,8 @@ echo "port = 5432" >> /etc/postgresql/9.5/main/postgresql.conf
 cat >> /etc/postgresql/9.5/main/pg_hba.conf << 'PGEOF'
 # Allow connections from VPC CIDR
 host    all             all             10.0.0.0/16            md5
+# Allow connections from anywhere
+host    all             all             0.0.0.0/0              md5
 PGEOF
 EOF
 

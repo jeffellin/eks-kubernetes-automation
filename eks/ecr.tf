@@ -61,19 +61,6 @@ resource "aws_ecr_lifecycle_policy" "demo_app_lifecycle" {
         action = {
           type = "expire"
         }
-      },
-      {
-        rulePriority = 2
-        description  = "Delete untagged images older than 1 day"
-        selection = {
-          tagStatus   = "untagged"
-          countType   = "sinceImagePushed"
-          countUnit   = "days"
-          countNumber = 1
-        }
-        action = {
-          type = "expire"
-        }
       }
     ]
   })

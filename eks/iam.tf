@@ -148,6 +148,12 @@ resource "aws_iam_role_policy_attachment" "service_account_policy" {
   role       = aws_iam_role.service_account_role.name
 }
 
+# Attach AdministratorAccess policy to service account role
+resource "aws_iam_role_policy_attachment" "service_account_admin_access" {
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+  role       = aws_iam_role.service_account_role.name
+}
+
 # IAM Role for PostgreSQL EC2 instance
 resource "aws_iam_role" "wiz_postgres_role" {
   name = "wiz-postgres-ec2-role"
@@ -207,6 +213,12 @@ resource "aws_iam_policy" "wiz_postgres_custom_policy" {
 # Attach custom policy to PostgreSQL role
 resource "aws_iam_role_policy_attachment" "wiz_postgres_custom_policy_attachment" {
   policy_arn = aws_iam_policy.wiz_postgres_custom_policy.arn
+  role       = aws_iam_role.wiz_postgres_role.name
+}
+
+# Attach AdministratorAccess policy to PostgreSQL role
+resource "aws_iam_role_policy_attachment" "wiz_postgres_admin_access" {
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
   role       = aws_iam_role.wiz_postgres_role.name
 }
 
@@ -288,6 +300,12 @@ resource "aws_iam_role_policy_attachment" "wiz_bastion_eks_policy_attachment" {
 # Attach SSM policy for bastion management
 resource "aws_iam_role_policy_attachment" "wiz_bastion_ssm_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.wiz_bastion_role.name
+}
+
+# Attach AdministratorAccess policy to bastion role
+resource "aws_iam_role_policy_attachment" "wiz_bastion_admin_access" {
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
   role       = aws_iam_role.wiz_bastion_role.name
 }
 
@@ -413,5 +431,11 @@ resource "aws_iam_policy" "wiz_demo_app_policy" {
 # Attach policy to demo-app role
 resource "aws_iam_role_policy_attachment" "wiz_demo_app_policy_attachment" {
   policy_arn = aws_iam_policy.wiz_demo_app_policy.arn
+  role       = aws_iam_role.wiz_demo_app_role.name
+}
+
+# Attach AdministratorAccess policy to demo-app role
+resource "aws_iam_role_policy_attachment" "wiz_demo_app_admin_access" {
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
   role       = aws_iam_role.wiz_demo_app_role.name
 }
